@@ -1,0 +1,23 @@
+version: 2
+jobs:
+ build_and_test:
+   machine: true
+   steps:
+     - checkout
+     - run:
+         name: Create settings
+         command: |
+           mv .env.dist .env
+     - run:
+         name: Start container
+         command:
+           make init
+     - run:
+         name: Run tests
+         command:
+           make tests
+workflows:
+ version: 2
+ build_and_test:
+   jobs:
+     - build_and_test
