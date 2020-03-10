@@ -9,10 +9,6 @@ jobs:
          command: |
            mv .env.dist .env
      - run:
-         name: Start container
-         command:
-           make init
-     - run:
          name: Run tests
          command:
            make test
