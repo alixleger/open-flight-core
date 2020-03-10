@@ -1,0 +1,39 @@
+version: "3.3"
+services:
+  postgres:
+    image: postgres:latest
+    container_name: db_postgres
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - DATABASE_HOST=${DB_HOST}
+    ports:
+      - '6000:5432'
+    volumes:
+      - database_postgres:/var/lib/postgresql/data
+    networks:
+      - api
+
+  openflight_core:
+    container_name: openflight_core
+    build: .
+    command: ["./wait-for-it.sh", "postgres:6000", "--", "go", "run", "main.go"]
+    ports:
+      - '8000:8000'
+    volumes:
+      - openflight_core:/core
+    depends_on:
+      - postgres
+    links:
+      - postgres
+    networks:
+      - api
+
+volumes:
+  openflight_core:
+  database_postgres:
+
+networks:
+  api:
+    driver: bridge
