@@ -2,12 +2,13 @@ package models
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/jinzhu/gorm"
 
-	// DB driver
-	_ "github.com/jinzhu/gorm/dialects/postgres"
+	_ "github.com/jinzhu/gorm/dialects/postgres" // DB driver
+	"github.com/joho/godotenv"
 )
 
 // SetupModels function
@@ -27,13 +28,21 @@ func SetupModels() *gorm.DB {
 		panic("Failed to connect to database!")
 	}
 
-	db.AutoMigrate(&Book{})
+	db.AutoMigrate(&User{}, &Company{}, &Airport{}, &Flight{}, &FavFlight{})
 
 	return db
 }
 
 // SetupTestModels function
 func SetupTestModels() *gorm.DB {
+	err := godotenv.Load("../../.env")
+
+	log.Println(os.Getenv("TEST_DB_HOST"))
+	log.Println(os.Getenv("TEST_DB_PORT"))
+	log.Println(os.Getenv("TEST_DB_USER"))
+	log.Println(os.Getenv("TEST_DB_NAME"))
+	log.Println(os.Getenv("TEST_DB_PASSWORD"))
+
 	db, err := gorm.Open(
 		"postgres",
 		fmt.Sprintf(
@@ -49,7 +58,7 @@ func SetupTestModels() *gorm.DB {
 		panic("Failed to connect to database!")
 	}
 
-	db.AutoMigrate(&Book{})
+	db.AutoMigrate(&User{}, &Company{}, &Airport{}, &Flight{}, &FavFlight{})
 
 	return db
 }
