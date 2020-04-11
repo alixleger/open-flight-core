@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/alixleger/open-flight/back/api/models"
+	models "github.com/alixleger/open-flight-core/db"
 	ginJWT "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"

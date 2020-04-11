@@ -1,12 +1,12 @@
-package api
+package server
 
 import (
 	"log"
 	"os"
 	"time"
 
-	"github.com/alixleger/open-flight/back/api/handlers"
-	"github.com/alixleger/open-flight/back/api/models"
+	"github.com/alixleger/open-flight-core/db"
+	"github.com/alixleger/open-flight-core/server/handlers"
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -74,7 +74,7 @@ func getAuthMiddleware() (*jwt.GinJWTMiddleware, error) {
 		MaxRefresh:  time.Hour * time.Duration(24*7),
 		IdentityKey: identityKey,
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
-			if v, ok := data.(*models.User); ok {
+			if v, ok := data.(*db.User); ok {
 				return jwt.MapClaims{
 					identityKey: v.Email,
 				}

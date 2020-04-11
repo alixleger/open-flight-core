@@ -1,14 +1,12 @@
-package models
+package db
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/jinzhu/gorm"
 
 	_ "github.com/jinzhu/gorm/dialects/postgres" // DB driver
-	"github.com/joho/godotenv"
 )
 
 // SetupModels function
@@ -35,14 +33,6 @@ func SetupModels() *gorm.DB {
 
 // SetupTestModels function
 func SetupTestModels() *gorm.DB {
-	err := godotenv.Load("../../.env")
-
-	log.Println(os.Getenv("TEST_DB_HOST"))
-	log.Println(os.Getenv("TEST_DB_PORT"))
-	log.Println(os.Getenv("TEST_DB_USER"))
-	log.Println(os.Getenv("TEST_DB_NAME"))
-	log.Println(os.Getenv("TEST_DB_PASSWORD"))
-
 	db, err := gorm.Open(
 		"postgres",
 		fmt.Sprintf(

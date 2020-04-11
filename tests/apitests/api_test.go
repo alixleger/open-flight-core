@@ -9,13 +9,20 @@ import (
 	"os"
 	"testing"
 
-	"github.com/alixleger/open-flight/back/api"
-	"github.com/alixleger/open-flight/back/api/models"
+	models "github.com/alixleger/open-flight-core/db"
+	api "github.com/alixleger/open-flight-core/server"
+	"github.com/joho/godotenv"
 )
 
 var server = api.Server{}
 
 func TestMain(m *testing.M) {
+	err := godotenv.Load("../../.env")
+
+	if err != nil {
+		panic("Failed to load .env file!")
+	}
+
 	server = api.New(models.SetupTestModels())
 	os.Exit(m.Run())
 }

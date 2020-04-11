@@ -1,4 +1,4 @@
-module github.com/alixleger/open-flight/back
+module github.com/alixleger/open-flight-core
 
 go 1.14
 

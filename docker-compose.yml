@@ -17,8 +17,10 @@ services:
 
   openflight_core:
     container_name: openflight_core
-    build: .
-    command: ["./wait-for-it.sh", "postgres:6000", "--", "go", "run", "main.go"]
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    command: ["./main"]
     ports:
       - '8000:8000'
     volumes:

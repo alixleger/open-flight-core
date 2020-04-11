@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/alixleger/open-flight/back/api"
-	"github.com/alixleger/open-flight/back/api/models"
+	"github.com/alixleger/open-flight-core/db"
+	"github.com/alixleger/open-flight-core/server"
 	_ "github.com/joho/godotenv/autoload" // .env autoloading
 )
 
 func main() {
-	server := api.New(models.SetupModels())
+	server := server.New(db.SetupModels())
 	server.Run()
 }

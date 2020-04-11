@@ -18,7 +18,7 @@ services:
   backend_test:
     build:
       context: .
-      dockerfile: ./Dockerfile.test
+      dockerfile: ./docker/Dockerfile.test
     volumes:
       - back_test:/backend
     depends_on:
