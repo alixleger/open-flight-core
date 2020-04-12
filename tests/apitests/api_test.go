@@ -2,11 +2,13 @@ package apitests
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 
 	models "github.com/alixleger/open-flight-core/db"
@@ -14,7 +16,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var server = api.Server{}
+var Server = api.Server{}
 
 func TestMain(m *testing.M) {
 	err := godotenv.Load("../../.env")
@@ -23,16 +25,16 @@ func TestMain(m *testing.M) {
 		panic("Failed to load .env file!")
 	}
 
-	server = api.New(models.SetupTestModels())
+	Server = api.New(models.SetupTestModels())
 	os.Exit(m.Run())
 }
 
 func refreshUserTable() error {
-	err := server.DB.DropTableIfExists(&models.User{}).Error
+	err := Server.DB.DropTableIfExists(&models.User{}).Error
 	if err != nil {
 		return err
 	}
-	err = server.DB.AutoMigrate(&models.User{}).Error
+	err = Server.DB.AutoMigrate(&models.User{}).Error
 	if err != nil {
 		return err
 	}
@@ -41,13 +43,31 @@ func refreshUserTable() error {
 	return nil
 }
 
-func createUser(email string, password string) {
+func createUser(email string, password string) string {
 	hashedPassword, err := models.Hash(password)
 	if err != nil {
 		log.Fatal(err)
 	}
 	user := models.User{Email: email, Password: string(hashedPassword)}
-	server.DB.Create(&user)
+	Server.DB.Create(&user)
+
+	body, err := json.Marshal(struct {
+		Email    string
+		Password string
+	}{email, password})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	w := performRequest("POST", "/login", body, "")
+	var response map[string]json.RawMessage
+	err = json.Unmarshal([]byte(w.Body.String()), &response)
+	if err != nil || response["token"] == nil {
+		log.Fatal(err)
+	}
+
+	return strings.Replace(string(response["token"]), "\"", "", -1)
 }
 
 func performRequest(method, path string, jsonBody []byte, token string) *httptest.ResponseRecorder {
@@ -65,7 +85,7 @@ func performRequest(method, path string, jsonBody []byte, token string) *httptes
 	}
 
 	w := httptest.NewRecorder()
-	server.Router.ServeHTTP(w, req)
+	Server.Router.ServeHTTP(w, req)
 
 	return w
 }

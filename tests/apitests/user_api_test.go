@@ -1,10 +1,11 @@
 package apitests
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 	"testing"
+
+	"github.com/appleboy/gofight/v2"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -25,14 +26,15 @@ func TestRegisterOK(t *testing.T) {
 		Password: "test",
 	}
 
-	body, err := json.Marshal(login)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	w := performRequest("POST", "/register", body, "")
-	assert.Equal(t, http.StatusOK, w.Code)
+	r := gofight.New()
+	r.POST("/register").
+		SetJSON(gofight.D{
+			"email":    login.Email,
+			"password": login.Password,
+		}).
+		Run(Server.Router, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+			assert.Equal(t, http.StatusOK, r.Code)
+		})
 }
 
 func TestRegisterBadRequest(t *testing.T) {
@@ -46,14 +48,15 @@ func TestRegisterBadRequest(t *testing.T) {
 		Password: "test",
 	}
 
-	body, err := json.Marshal(login)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	w := performRequest("POST", "/register", body, "")
-	assert.Equal(t, http.StatusBadRequest, w.Code)
+	r := gofight.New()
+	r.POST("/register").
+		SetJSON(gofight.D{
+			"email":    login.Email,
+			"password": login.Password,
+		}).
+		Run(Server.Router, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+			assert.Equal(t, http.StatusBadRequest, r.Code)
+		})
 }
 
 func TestRegisterUnauthorized(t *testing.T) {
@@ -69,12 +72,85 @@ func TestRegisterUnauthorized(t *testing.T) {
 
 	createUser(login.Email, login.Password)
 
-	body, err := json.Marshal(login)
+	r := gofight.New()
+	r.POST("/register").
+		SetJSON(gofight.D{
+			"email":    login.Email,
+			"password": login.Password,
+		}).
+		Run(Server.Router, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+			assert.Equal(t, http.StatusUnauthorized, r.Code)
+		})
+}
 
+func TestUserPatchOK(t *testing.T) {
+	err := refreshUserTable()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	w := performRequest("POST", "/register", body, "")
-	assert.Equal(t, http.StatusUnauthorized, w.Code)
+	r := gofight.New()
+
+	r.PATCH("/auth/user").
+		SetHeader(gofight.H{
+			"Authorization": "Bearer " + createUser("test@test.fr", "test"),
+		}).
+		SetJSON(gofight.D{
+			"email":    "test@test.fr",
+			"password": "testtest",
+		}).
+		Run(Server.Router, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+			assert.Equal(t, http.StatusOK, r.Code)
+		})
+
+	r.POST("/login").
+		SetJSON(gofight.D{
+			"email":    "test@test.fr",
+			"password": "testtest",
+		}).
+		Run(Server.Router, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+			assert.Equal(t, http.StatusOK, r.Code)
+		})
+}
+
+func TestUserPatchUnauthorized(t *testing.T) {
+	err := refreshUserTable()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	createUser("test@test.fr", "test")
+
+	r := gofight.New()
+	r.PATCH("/auth/user").
+		SetHeader(gofight.H{
+			"Authorization": "Bearer " + "test",
+		}).
+		SetJSON(gofight.D{
+			"email":    "test@test.fr",
+			"password": "testtest",
+		}).
+		Run(Server.Router, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+			assert.Equal(t, http.StatusUnauthorized, r.Code)
+		})
+}
+
+func TestUserPatchBadRequest(t *testing.T) {
+	err := refreshUserTable()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	r := gofight.New()
+	r.PATCH("/auth/user").
+		SetHeader(gofight.H{
+			"Authorization": "Bearer " + createUser("test@test.fr", "test"),
+		}).
+		SetJSON(gofight.D{
+			"email":    "test",
+			"password": "",
+		}).
+		Run(Server.Router, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+			assert.Equal(t, http.StatusBadRequest, r.Code)
+		})
 }
