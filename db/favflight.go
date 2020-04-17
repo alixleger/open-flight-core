@@ -1,12 +1,13 @@
 package db
 
 import (
-	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm" // For annotations
 )
 
 // FavFlight model
 type FavFlight struct {
-	gorm.Model
-	UserID   uint `json:"user"`
-	FlightID uint `json:"flight"`
+	ID          uint    `gorm:"primary_key" json:"id"`
+	UserID      uint    `json:"user"`
+	FlightID    uint    `json:"flight"`
+	TargetPrice float32 `sql:"type:decimal(10,2);" json:"target_price"`
 }
