@@ -1,5 +1,19 @@
 version: "3.3"
 services:
+  influxdb:
+    image: influxdb:latest
+    container_name: influxdb
+    environment:
+      - INFLUXDB_DB=${INFLUXDB_DATABASE}
+      - INFLUXDB_ADMIN_USER=${INFLUXDB_USERNAME}
+      - INFLUXDB_ADMIN_PASSWORD=${INFLUXDB_PASSWORD}
+    ports:
+      - "8086:8086"
+    volumes:
+      - database_influx:/var/lib/influxdb
+    networks:
+      - api
+
   postgres:
     image: postgres:latest
     container_name: db_postgres
@@ -27,14 +41,17 @@ services:
       - openflight_core:/core
     depends_on:
       - postgres
+      - influxdb
     links:
       - postgres
+      - influxdb
     networks:
       - api
 
 volumes:
   openflight_core:
   database_postgres:
+  database_influx:
 
 networks:
   api:

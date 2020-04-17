@@ -1,5 +1,19 @@
 version: '3'
 services:
+  influxdb_test:
+    image: influxdb:latest
+    container_name: influxdb_test
+    environment:
+      - INFLUXDB_DB=${TEST_INFLUXDB_DATABASE}
+      - INFLUXDB_ADMIN_USER=${TEST_INFLUXDB_USERNAME}
+      - INFLUXDB_ADMIN_PASSWORD=${TEST_INFLUXDB_PASSWORD}
+    ports:
+      - "8086:8086"
+    volumes:
+      - database_influx_test:/var/lib/influxdb
+    networks:
+      - api_test
+
   postgres_test:
     image: postgres:latest
     container_name: db_postgres_test
@@ -23,14 +37,17 @@ services:
       - back_test:/backend
     depends_on:
       - postgres_test
+      - influxdb_test
     links:
       - postgres_test
+      - influxdb_test
     networks:
       - api_test
 
 volumes:
   back_test:
   database_postgres_test:
+  database_influx_test:
 
 networks:
   api_test:
