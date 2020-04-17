@@ -7,5 +7,5 @@ import (
 // Company model
 type Company struct {
 	gorm.Model
-	Name string `json:"name"`
+	Name string `gorm:"size:32;not null;unique_index" json:"name"`
 }

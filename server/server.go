@@ -34,6 +34,8 @@ func New(db *gorm.DB) Server {
 		log.Fatal("JWT Error:" + err.Error())
 	}
 
+	router.GET("/companies", handlers.GetCompanies)
+
 	router.POST("/register", handlers.Register)
 	router.POST("/login", authMiddleware.LoginHandler)
 	router.POST("/logout", authMiddleware.LogoutHandler)

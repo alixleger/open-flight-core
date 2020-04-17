@@ -43,6 +43,25 @@ func refreshUserTable() error {
 	return nil
 }
 
+func refreshCompanyTable() error {
+	err := Server.DB.DropTableIfExists(&models.Company{}).Error
+	if err != nil {
+		return err
+	}
+	err = Server.DB.AutoMigrate(&models.Company{}).Error
+	if err != nil {
+		return err
+	}
+
+	log.Printf("Successfully refreshed table")
+	return nil
+}
+
+func createCompany(name string) {
+	company := models.Company{Name: name}
+	Server.DB.Create(&company)
+}
+
 func createUser(email string, password string) string {
 	hashedPassword, err := models.Hash(password)
 	if err != nil {
