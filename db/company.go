@@ -1,11 +1,11 @@
 package db
 
 import (
-	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm" // For annotations
 )
 
 // Company model
 type Company struct {
-	gorm.Model
+	ID   uint   `gorm:"primary_key" json:"id"`
 	Name string `gorm:"size:32;not null;unique_index" json:"name"`
 }

@@ -3,12 +3,12 @@ package db
 import (
 	"time"
 
-	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm" // For annotations
 )
 
 // Flight model
 type Flight struct {
-	gorm.Model
+	ID               uint      `gorm:"primary_key" json:"id"`
 	CompanyID        uint      `json:"company"`
 	DepartAirportID  uint      `json:"depart_airport"`
 	ArrivalAirportID uint      `json:"arrival_airport"`
