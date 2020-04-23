@@ -28,9 +28,6 @@ func SetupModels() *gorm.DB {
 
 	db.AutoMigrate(&User{}, &Company{}, &Airport{}, &Flight{}, &FavFlight{})
 
-	var company Company
-	db.FirstOrCreate(&company, Company{Name: "Ryan Air"})
-
 	return db
 }
 

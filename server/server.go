@@ -10,6 +10,8 @@ import (
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
+
+	"github.com/influxdata/influxdb/client/v2"
 )
 
 // Server type
@@ -25,6 +27,19 @@ func New(db *gorm.DB) Server {
 	// Router use DB
 	router.Use(func(c *gin.Context) {
 		c.Set("db", db)
+
+		influxdbClient, err := client.NewHTTPClient(client.HTTPConfig{
+			Addr:     os.Getenv("INFLUXDB_ADDR"),
+			Username: os.Getenv("INFLUXDB_USERNAME"),
+			Password: os.Getenv("INFLUXDB_PASSWORD"),
+		})
+
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer influxdbClient.Close()
+
+		c.Set("influxdbClient", influxdbClient)
 		c.Next()
 	})
 
@@ -50,6 +65,7 @@ func New(db *gorm.DB) Server {
 	{
 		// TODO: List routes which need authentication
 		auth.PATCH("/user", handlers.PatchUser)
+		auth.GET("/flightprices", handlers.GetFlightPrices)
 	}
 
 	return Server{DB: db, Router: router}
