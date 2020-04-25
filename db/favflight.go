@@ -7,7 +7,7 @@ import (
 // FavFlight model
 type FavFlight struct {
 	ID          uint `gorm:"primary_key" json:"id"`
-	UserID      uint `json:"user"`
-	FlightID    uint `json:"flight"`
+	UserID      uint `json:"user_id"`
+	FlightID    uint `json:"flight_id"`
 	TargetPrice uint `json:"target_price"`
 }

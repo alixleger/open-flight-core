@@ -106,4 +106,5 @@ func PatchUser(c *gin.Context) {
 
 	db := c.MustGet("db").(*gorm.DB)
 	db.Save(&user)
+	c.JSON(http.StatusOK, gin.H{"data": true})
 }

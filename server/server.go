@@ -50,7 +50,6 @@ func New(db *gorm.DB) Server {
 	}
 
 	router.GET("/companies", handlers.GetCompanies)
-
 	router.POST("/register", handlers.Register)
 	router.POST("/login", authMiddleware.LoginHandler)
 	router.POST("/logout", authMiddleware.LogoutHandler)
@@ -63,9 +62,10 @@ func New(db *gorm.DB) Server {
 	auth.GET("/refresh_token", authMiddleware.RefreshHandler)
 	auth.Use(authMiddleware.MiddlewareFunc())
 	{
-		// TODO: List routes which need authentication
 		auth.PATCH("/user", handlers.PatchUser)
 		auth.GET("/flightprices", handlers.GetFlightPrices)
+		auth.GET("/favflights", handlers.GetFavFlights)
+		auth.POST("/favflight", handlers.PostFavFlight)
 	}
 
 	return Server{DB: db, Router: router}

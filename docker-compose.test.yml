@@ -4,9 +4,9 @@ services:
     image: influxdb:latest
     container_name: influxdb_test
     environment:
-      - INFLUXDB_DB=${TEST_INFLUXDB_DATABASE}
-      - INFLUXDB_ADMIN_USER=${TEST_INFLUXDB_USERNAME}
-      - INFLUXDB_ADMIN_PASSWORD=${TEST_INFLUXDB_PASSWORD}
+      - INFLUXDB_DB=${INFLUXDB_DATABASE}
+      - INFLUXDB_ADMIN_USER=${INFLUXDB_USERNAME}
+      - INFLUXDB_ADMIN_PASSWORD=${INFLUXDB_PASSWORD}
     ports:
       - "8086:8086"
     volumes:
