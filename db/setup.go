@@ -54,9 +54,5 @@ func SetupTestModels() *gorm.DB {
 
 	db.AutoMigrate(&User{}, &Company{}, &Flight{}, &FavFlight{})
 
-	db.Model(&FavFlight{}).AddForeignKey("user_id", "users(id)", "RESTRICT", "RESTRICT")
-	db.Model(&FavFlight{}).AddForeignKey("flight_id", "flights(id)", "RESTRICT", "RESTRICT")
-	db.Model(&Flight{}).AddForeignKey("company_id", "companies(id)", "RESTRICT", "RESTRICT")
-
 	return db
 }
