@@ -9,9 +9,8 @@ import (
 // Flight model
 type Flight struct {
 	ID             uint      `gorm:"primary_key" json:"id"`
-	CompanyID      uint      `json:"company_id"`
-	DepartAirport  string    `json:"depart_airport"`
-	ArrivalAirport string    `json:"arrival_airport"`
+	DepartPlaceID  uint      `json:"depart_place_id"`
+	ArrivalPlaceID uint      `json:"arrival_place_id"`
 	DepartDate     time.Time `json:"depart_date"`
 	ArrivalDate    time.Time `json:"arrival_date"`
 	ExternalID     string    `json:"external_id"`

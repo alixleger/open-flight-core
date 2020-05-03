@@ -4,6 +4,8 @@ ENV GO111MODULE=on \
     GOOS=linux \
     GOARCH=amd64
 
+RUN apk add -U --no-cache ca-certificates
+
 WORKDIR /build
 COPY go.mod go.sum ./
 RUN go mod download
@@ -16,5 +18,6 @@ RUN cp /build/.env .
 
 
 FROM scratch
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /dist /
 ENTRYPOINT ["/main"]

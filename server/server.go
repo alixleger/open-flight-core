@@ -7,6 +7,7 @@ import (
 
 	models "github.com/alixleger/open-flight-core/db"
 	"github.com/alixleger/open-flight-core/server/handlers"
+	"github.com/alixleger/open-flight-core/services/skyscanner"
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -21,25 +22,13 @@ type Server struct {
 }
 
 // New function is the server constructor
-func New(db *gorm.DB) Server {
+func New(db *gorm.DB, skyscannerClient *skyscanner.Client, influxdbClient *client.Client) *Server {
 	router := gin.Default()
 
-	// Router use DB
 	router.Use(func(c *gin.Context) {
 		c.Set("db", db)
-
-		influxdbClient, err := client.NewHTTPClient(client.HTTPConfig{
-			Addr:     os.Getenv("INFLUXDB_ADDR"),
-			Username: os.Getenv("INFLUXDB_USERNAME"),
-			Password: os.Getenv("INFLUXDB_PASSWORD"),
-		})
-
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer influxdbClient.Close()
-
 		c.Set("influxdbClient", influxdbClient)
+		c.Set("skyscannerClient", skyscannerClient)
 		c.Next()
 	})
 
@@ -49,7 +38,7 @@ func New(db *gorm.DB) Server {
 		log.Fatal("JWT Error:" + err.Error())
 	}
 
-	router.GET("/companies", handlers.GetCompanies)
+	router.GET("/places", handlers.GetPlaces)
 	router.POST("/register", handlers.Register)
 	router.POST("/login", authMiddleware.LoginHandler)
 	router.POST("/logout", authMiddleware.LogoutHandler)
@@ -68,7 +57,7 @@ func New(db *gorm.DB) Server {
 		auth.POST("/favflight", handlers.PostFavFlight)
 	}
 
-	return Server{DB: db, Router: router}
+	return &Server{DB: db, Router: router}
 }
 
 func getAuthMiddleware() (*jwt.GinJWTMiddleware, error) {

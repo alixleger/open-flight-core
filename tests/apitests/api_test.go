@@ -13,10 +13,11 @@ import (
 
 	models "github.com/alixleger/open-flight-core/db"
 	api "github.com/alixleger/open-flight-core/server"
+	"github.com/alixleger/open-flight-core/services/skyscanner"
 	"github.com/joho/godotenv"
 )
 
-var Server = api.Server{}
+var Server *api.Server
 
 func TestMain(m *testing.M) {
 	err := godotenv.Load("../../.env")
@@ -25,7 +26,7 @@ func TestMain(m *testing.M) {
 		panic("Failed to load .env file!")
 	}
 
-	Server = api.New(models.SetupTestModels())
+	Server = api.New(models.SetupTestModels(), skyscanner.New("", "", ""), nil)
 	os.Exit(m.Run())
 }
 
@@ -41,25 +42,6 @@ func refreshUserTable() error {
 
 	log.Printf("Successfully refreshed table")
 	return nil
-}
-
-func refreshCompanyTable() error {
-	err := Server.DB.DropTableIfExists(&models.Company{}).Error
-	if err != nil {
-		return err
-	}
-	err = Server.DB.AutoMigrate(&models.Company{}).Error
-	if err != nil {
-		return err
-	}
-
-	log.Printf("Successfully refreshed table")
-	return nil
-}
-
-func createCompany(name string) {
-	company := models.Company{Name: name}
-	Server.DB.Create(&company)
 }
 
 func createUser(email string, password string) string {
