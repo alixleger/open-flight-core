@@ -38,6 +38,7 @@ func New(db *gorm.DB, skyscannerClient *skyscanner.Client, influxdbClient *clien
 		log.Fatal("JWT Error:" + err.Error())
 	}
 
+	router.GET("/flights", handlers.GetFlights)
 	router.GET("/places", handlers.GetPlaces)
 	router.POST("/register", handlers.Register)
 	router.POST("/login", authMiddleware.LoginHandler)

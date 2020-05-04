@@ -30,6 +30,8 @@ func SetupModels() *gorm.DB {
 
 	db.Model(&FavFlight{}).AddForeignKey("user_id", "users(id)", "RESTRICT", "RESTRICT")
 	db.Model(&FavFlight{}).AddForeignKey("flight_id", "flights(id)", "RESTRICT", "RESTRICT")
+	db.Model(&Flight{}).AddForeignKey("depart_place_id", "places(id)", "RESTRICT", "RESTRICT")
+	db.Model(&Flight{}).AddForeignKey("arrival_place_id", "places(id)", "RESTRICT", "RESTRICT")
 
 	return db
 }

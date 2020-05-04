@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 )
 
 // Client type
@@ -47,16 +48,6 @@ func (client *Client) get(endpoint string) []byte {
 	return body
 }
 
-// Place ressource
-type Place struct {
-	PlaceId     string
-	PlaceName   string
-	CountryId   string
-	RegionId    string
-	CityId      string
-	CountryName string
-}
-
 // GetPlaces return Skyscanner places from query
 func (client *Client) GetPlaces(query string) []Place {
 	response := client.get(fmt.Sprintf("/apiservices/autosuggest/v1.0/FR/EUR/fr-FR/?query=%s", query))
@@ -69,7 +60,75 @@ func (client *Client) GetPlaces(query string) []Place {
 	return structuredResponse["Places"]
 }
 
-// GetQuotes return Skyscanner quotes for an itinery
-func (client *Client) GetQuotes(originPlace string, destinationPlace string, outboundDate string) []byte {
-	return client.get(fmt.Sprintf("apiservices/browsequotes/v1.0/FR/EUR/fr-FR/%s/%s/%s", originPlace, destinationPlace, outboundDate))
+// GetFlights return Skyscanner quotes for an itinerary
+func (client *Client) GetFlights(originPlace string, destinationPlace string, outboundDate string) []Flight {
+	response := client.get(fmt.Sprintf("apiservices/browsequotes/v1.0/FR/EUR/fr-FR/%s/%s/%s", originPlace, destinationPlace, outboundDate))
+	var structuredResponse map[string][]byte
+	err := json.Unmarshal(response, &structuredResponse)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var quotes []Quote
+	var places []QuotePlace
+	var carriers []Carrier
+
+	err = json.Unmarshal(structuredResponse["Quotes"], &quotes)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = json.Unmarshal(structuredResponse["Places"], &places)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = json.Unmarshal(structuredResponse["Carriers"], &carriers)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var flights []Flight
+
+	for _, quote := range quotes {
+		// Manage only direct quotes for the moment
+		if quote.Direct != true {
+			continue
+		}
+
+		var flight Flight
+		flight.Price = quote.MinPrice
+		carrierID := quote.OutboundLeg.CarrierIds[0]
+		for _, carrier := range carriers {
+			if carrier.CarrierId != carrierID {
+				continue
+			}
+			flight.Carrier = carrier.Name
+			break
+		}
+		for _, place := range places {
+			if place.PlaceId == quote.OutboundLeg.DestinationId {
+				flight.DestinationPlace = Place{
+					PlaceId:     fmt.Sprintf("%s-sky", place.SkyscannerCode),
+					PlaceName:   place.Name,
+					CountryId:   "",
+					RegionId:    "",
+					CityId:      place.CityId,
+					CountryName: place.CountryName,
+				}
+			} else if place.PlaceId == quote.OutboundLeg.OriginId {
+				flight.OriginPlace = Place{
+					PlaceId:     fmt.Sprintf("%s-sky", place.SkyscannerCode),
+					PlaceName:   place.Name,
+					CityId:      place.CityId,
+					CountryName: place.CountryName,
+				}
+			}
+		}
+		flight.DepartureDate, err = time.Parse(
+			time.RFC3339,
+			quote.OutboundLeg.DepartureDate)
+
+		flights = append(flights, flight)
+	}
+
+	return flights
 }
