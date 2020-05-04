@@ -42,7 +42,7 @@ func GetFlights(c *gin.Context) {
 
 	var flights []models.Flight
 	db := c.MustGet("db").(*gorm.DB)
-	db.Where("depart_place_id = ? AND arrival_place_id = ? AND depart_date = ?", departPlaceIDValue, arrivalPlaceIDValue, departDateTimeValue).Find(&flights)
+	db.Preload("DepartPlace").Preload("ArrivalPlace").Where("depart_place_id = ? AND arrival_place_id = ? AND depart_date = ?", departPlaceIDValue, arrivalPlaceIDValue, departDateTimeValue).Find(&flights)
 
 	if len(flights) == 0 {
 		var departPlace models.Place
@@ -80,6 +80,7 @@ func GetFlights(c *gin.Context) {
 				DepartPlace:    flightDepartPlace,
 				ArrivalPlaceID: flightArrivalPlace.ID,
 				ArrivalPlace:   flightArrivalPlace,
+				Carrier:        flight.Carrier,
 			}
 			db.Create(&dbFlight)
 			flights = append(flights, dbFlight)

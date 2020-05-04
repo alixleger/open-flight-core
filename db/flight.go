@@ -14,7 +14,7 @@ type Flight struct {
 	ArrivalPlaceID uint      `json:"arrival_place_id"`
 	ArrivalPlace   Place     `gorm:"foreignkey:ArrivalPlaceID" json:"arrival_place"`
 	DepartDate     time.Time `json:"depart_date"`
-	ArrivalDate    time.Time `json:"arrival_date"`
 	ExternalID     string    `json:"external_id"`
 	Price          uint      `json:"price"`
+	Carrier        string    `json:"carrier"`
 }

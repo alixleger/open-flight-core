@@ -50,7 +50,7 @@ func (client *Client) get(endpoint string) []byte {
 
 // GetPlaces return Skyscanner places from query
 func (client *Client) GetPlaces(query string) []Place {
-	response := client.get(fmt.Sprintf("/apiservices/autosuggest/v1.0/FR/EUR/fr-FR/?query=%s", query))
+	response := client.get(fmt.Sprintf("apiservices/autosuggest/v1.0/FR/EUR/fr-FR/?query=%s", query))
 	var structuredResponse map[string][]Place
 	err := json.Unmarshal(response, &structuredResponse)
 	if err != nil {
@@ -63,10 +63,10 @@ func (client *Client) GetPlaces(query string) []Place {
 // GetFlights return Skyscanner quotes for an itinerary
 func (client *Client) GetFlights(originPlace string, destinationPlace string, outboundDate string) []Flight {
 	response := client.get(fmt.Sprintf("apiservices/browsequotes/v1.0/FR/EUR/fr-FR/%s/%s/%s", originPlace, destinationPlace, outboundDate))
-	var structuredResponse map[string][]byte
+	var structuredResponse map[string]json.RawMessage
 	err := json.Unmarshal(response, &structuredResponse)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err.Error() + " when trying to unmarshal into structuredResponse. Body: " + string(response))
 	}
 
 	var quotes []Quote
@@ -75,25 +75,20 @@ func (client *Client) GetFlights(originPlace string, destinationPlace string, ou
 
 	err = json.Unmarshal(structuredResponse["Quotes"], &quotes)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err.Error() + " when trying to unmarshal into quotes. Body: " + string(response))
 	}
 	err = json.Unmarshal(structuredResponse["Places"], &places)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err.Error() + " when trying to unmarshal into places. Body: " + string(response))
 	}
 	err = json.Unmarshal(structuredResponse["Carriers"], &carriers)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err.Error() + " when trying to unmarshal into carriers. Body: " + string(response))
 	}
 
 	var flights []Flight
 
 	for _, quote := range quotes {
-		// Manage only direct quotes for the moment
-		if quote.Direct != true {
-			continue
-		}
-
 		var flight Flight
 		flight.Price = quote.MinPrice
 		carrierID := quote.OutboundLeg.CarrierIds[0]
@@ -125,7 +120,10 @@ func (client *Client) GetFlights(originPlace string, destinationPlace string, ou
 		}
 		flight.DepartureDate, err = time.Parse(
 			time.RFC3339,
-			quote.OutboundLeg.DepartureDate)
+			quote.OutboundLeg.DepartureDate+"Z")
+		if err != nil {
+			log.Fatal(err.Error() + " when trying to parse DepartureDate : " + quote.OutboundLeg.DepartureDate)
+		}
 
 		flights = append(flights, flight)
 	}
