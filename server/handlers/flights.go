@@ -57,7 +57,12 @@ func GetFlights(c *gin.Context) {
 		}
 
 		skyscannerClient := c.MustGet("skyscannerClient").(*skyscanner.Client)
-		skyscannerFlights := skyscannerClient.GetFlights(departPlace.ExternalID, arrivalPlace.ExternalID, fmt.Sprintf("%d-%02d-%02d", departDateTimeValue.Year(), departDateTimeValue.Month(), departDateTimeValue.Day()))
+		skyscannerFlights, err := skyscannerClient.GetFlights(departPlace.ExternalID, arrivalPlace.ExternalID, fmt.Sprintf("%d-%02d-%02d", departDateTimeValue.Year(), departDateTimeValue.Month(), departDateTimeValue.Day()))
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "External services error"})
+			return
+		}
+
 		for _, flight := range skyscannerFlights {
 			var flightDepartPlace models.Place
 			var flightArrivalPlace models.Place

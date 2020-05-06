@@ -26,7 +26,12 @@ func GetPlaces(c *gin.Context) {
 
 	if len(places) == 0 {
 		skyscannerClient := c.MustGet("skyscannerClient").(*skyscanner.Client)
-		skyscannerPlaces := skyscannerClient.GetPlaces(queryString)
+		skyscannerPlaces, err := skyscannerClient.GetPlaces(queryString)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "External services error"})
+			return
+		}
+
 		for _, place := range skyscannerPlaces {
 			dbPlace := models.Place{
 				ExternalID: place.PlaceId,

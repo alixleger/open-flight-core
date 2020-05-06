@@ -2,6 +2,7 @@ package skyscanner
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -25,48 +26,65 @@ func New(apiURL string, rapidAPIHost string, rapidAPIKey string) *Client {
 	}
 }
 
-func (client *Client) get(endpoint string) []byte {
+func (client *Client) get(endpoint string) ([]byte, error) {
 	url := fmt.Sprintf("%s/%s", client.apiURL, endpoint)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	req.Header.Add("x-rapidapi-host", client.rapidAPIHost)
 	req.Header.Add("x-rapidapi-key", client.rapidAPIKey)
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	return body
+	return body, nil
 }
 
 // GetPlaces return Skyscanner places from query
-func (client *Client) GetPlaces(query string) []Place {
-	response := client.get(fmt.Sprintf("apiservices/autosuggest/v1.0/FR/EUR/fr-FR/?query=%s", query))
-	var structuredResponse map[string][]Place
-	err := json.Unmarshal(response, &structuredResponse)
+func (client *Client) GetPlaces(query string) ([]Place, error) {
+	response, err := client.get(fmt.Sprintf("apiservices/autosuggest/v1.0/FR/EUR/fr-FR/?query=%s", query))
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return nil, err
 	}
 
-	return structuredResponse["Places"]
+	var structuredResponse map[string][]Place
+	err = json.Unmarshal(response, &structuredResponse)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return structuredResponse["Places"], nil
 }
 
 // GetFlights return Skyscanner quotes for an itinerary
-func (client *Client) GetFlights(originPlace string, destinationPlace string, outboundDate string) []Flight {
-	response := client.get(fmt.Sprintf("apiservices/browsequotes/v1.0/FR/EUR/fr-FR/%s/%s/%s", originPlace, destinationPlace, outboundDate))
-	var structuredResponse map[string]json.RawMessage
-	err := json.Unmarshal(response, &structuredResponse)
+func (client *Client) GetFlights(originPlace string, destinationPlace string, outboundDate string) ([]Flight, error) {
+	response, err := client.get(fmt.Sprintf("apiservices/browsequotes/v1.0/FR/EUR/fr-FR/%s/%s/%s", originPlace, destinationPlace, outboundDate))
 	if err != nil {
-		log.Fatal(err.Error() + " when trying to unmarshal into structuredResponse. Body: " + string(response))
+		log.Println(err)
+		return nil, err
+	}
+
+	var structuredResponse map[string]json.RawMessage
+	err = json.Unmarshal(response, &structuredResponse)
+	if err != nil {
+		log.Println(err.Error() + " when trying to unmarshal into structuredResponse. Body: " + string(response))
+		return nil, err
+	}
+
+	if val, ok := structuredResponse["message"]; ok {
+		log.Println(string(val))
+		return nil, errors.New(string(val))
 	}
 
 	var quotes []Quote
@@ -75,15 +93,18 @@ func (client *Client) GetFlights(originPlace string, destinationPlace string, ou
 
 	err = json.Unmarshal(structuredResponse["Quotes"], &quotes)
 	if err != nil {
-		log.Fatal(err.Error() + " when trying to unmarshal into quotes. Body: " + string(response))
+		log.Println(err.Error() + " when trying to unmarshal into quotes. Body: " + string(response))
+		return nil, err
 	}
 	err = json.Unmarshal(structuredResponse["Places"], &places)
 	if err != nil {
-		log.Fatal(err.Error() + " when trying to unmarshal into places. Body: " + string(response))
+		log.Println(err.Error() + " when trying to unmarshal into places. Body: " + string(response))
+		return nil, err
 	}
 	err = json.Unmarshal(structuredResponse["Carriers"], &carriers)
 	if err != nil {
-		log.Fatal(err.Error() + " when trying to unmarshal into carriers. Body: " + string(response))
+		log.Println(err.Error() + " when trying to unmarshal into carriers. Body: " + string(response))
+		return nil, err
 	}
 
 	var flights []Flight
@@ -122,11 +143,12 @@ func (client *Client) GetFlights(originPlace string, destinationPlace string, ou
 			time.RFC3339,
 			quote.OutboundLeg.DepartureDate+"Z")
 		if err != nil {
-			log.Fatal(err.Error() + " when trying to parse DepartureDate : " + quote.OutboundLeg.DepartureDate)
+			log.Println(err.Error() + " when trying to parse DepartureDate : " + quote.OutboundLeg.DepartureDate)
+			return nil, err
 		}
 
 		flights = append(flights, flight)
 	}
 
-	return flights
+	return flights, nil
 }

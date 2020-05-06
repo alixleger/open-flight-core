@@ -73,18 +73,23 @@ func PostFavFlight(c *gin.Context) {
 
 	// Insert flight price in influxdb
 	influxClient := c.MustGet("influxdbClient").(client.Client)
-	insertFlightPrice(influxClient, user.Email, flight.ExternalID, flight.Price)
+	err := insertFlightPrice(influxClient, user.Email, flight.ExternalID, flight.Price)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{"data": true})
 }
 
-func insertFlightPrice(influxClient client.Client, userID string, flightID string, price uint) {
+func insertFlightPrice(influxClient client.Client, userID string, flightID string, price uint) error {
 	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
 		Database:  os.Getenv("INFLUXDB_DATABASE"),
 		Precision: "h",
 	})
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return err
 	}
 
 	tags := map[string]string{"user_id": userID, "flight": flightID}
@@ -92,11 +97,15 @@ func insertFlightPrice(influxClient client.Client, userID string, flightID strin
 
 	pt, err := client.NewPoint("flightprices", tags, fields, time.Now())
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return err
 	}
 	bp.AddPoint(pt)
 
 	if err := influxClient.Write(bp); err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return err
 	}
+
+	return nil
 }
