@@ -13,6 +13,8 @@ jobs:
     steps:
     - name: Get code
       uses: actions/checkout@v2
+    - name: Run tests
+      run: make test
     - name: Build and publish
       uses: elgohr/Publish-Docker-Github-Action@master
       with:
