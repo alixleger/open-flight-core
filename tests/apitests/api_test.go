@@ -14,18 +14,11 @@ import (
 	models "github.com/alixleger/open-flight-core/db"
 	api "github.com/alixleger/open-flight-core/server"
 	"github.com/alixleger/open-flight-core/services/skyscanner"
-	"github.com/joho/godotenv"
 )
 
 var Server *api.Server
 
 func TestMain(m *testing.M) {
-	err := godotenv.Load("../../.env")
-
-	if err != nil {
-		panic("Failed to load .env file!")
-	}
-
 	Server = api.New(models.SetupTestModels(), skyscanner.New("", "", ""), nil)
 	os.Exit(m.Run())
 }

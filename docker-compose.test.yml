@@ -33,6 +33,8 @@ services:
     build:
       context: .
       dockerfile: ./docker/Dockerfile.test
+    env_file:
+      - ./.env
     volumes:
       - back_test:/backend
     depends_on:

@@ -14,7 +14,6 @@ RUN go build -o main .
 
 WORKDIR /dist
 RUN cp /build/main .
-RUN cp /build/.env .
 
 
 FROM scratch

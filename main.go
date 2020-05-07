@@ -8,7 +8,6 @@ import (
 	"github.com/alixleger/open-flight-core/server"
 	"github.com/alixleger/open-flight-core/services/skyscanner"
 	"github.com/influxdata/influxdb/client/v2"
-	_ "github.com/joho/godotenv/autoload" // .env autoloading
 )
 
 func main() {
