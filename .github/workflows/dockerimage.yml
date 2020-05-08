@@ -14,9 +14,7 @@ jobs:
     - name: Get code
       uses: actions/checkout@v2
     - name: Run tests
-      run: |
-        mv .env.dist .env
-        make test
+      run: mv .env.dist .env && make test
     - name: Build and publish
       uses: elgohr/Publish-Docker-Github-Action@master
       with:
@@ -33,7 +31,4 @@ jobs:
         username: ${{ secrets.SERVER_USERNAME }}
         key: ${{ secrets.PRIVATE_KEY }}
         envs: TARGET_PATH
-        script: |
-          cd $TARGET_PATH
-          docker-compose pull openflight_core
-          docker-compose up --no-deps -d openflight_core
+        script: cd $TARGET_PATH && docker-compose pull openflight_core && docker-compose up --no-deps -d openflight_core
