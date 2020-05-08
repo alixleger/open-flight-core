@@ -37,4 +37,3 @@ jobs:
           cd $TARGET_PATH
           docker-compose pull openflight_core
           docker-compose up --no-deps -d openflight_core
-          
