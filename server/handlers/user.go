@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 
 	models "github.com/alixleger/open-flight-core/db"
 	jwt "github.com/appleboy/gin-jwt/v2"
@@ -26,8 +27,8 @@ func Authenticate(c *gin.Context) (interface{}, error) {
 		return "", jwt.ErrMissingLoginValues
 	}
 
-	email := loginVals.Email
-	password := loginVals.Password
+	email := strings.TrimSpace(strings.ToLower(loginVals.Email))
+	password := strings.TrimSpace(loginVals.Password)
 
 	db := c.MustGet("db").(*gorm.DB)
 	var user models.User
@@ -51,6 +52,8 @@ func Register(c *gin.Context) {
 	}
 
 	// Check if email already exist
+	input.Email = strings.TrimSpace(strings.ToLower(input.Email))
+	input.Password = strings.TrimSpace(input.Password)
 	var user models.User
 	if !db.Where("email = ?", input.Email).First(&user).RecordNotFound() {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "This email is already taken."})
@@ -86,6 +89,9 @@ func PatchUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Request should have a correct email and a password fields"})
 		return
 	}
+
+	input.Email = strings.TrimSpace(strings.ToLower(input.Email))
+	input.Password = strings.TrimSpace(input.Password)
 
 	if input.Email != "" {
 		validator := validator.New()
