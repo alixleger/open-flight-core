@@ -59,8 +59,8 @@ func PostFavFlight(c *gin.Context) {
 		return
 	}
 
-	if input.TargetPrice < flight.Price {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "target_price is already lower than current flight price"})
+	if flight.Price < input.TargetPrice {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "current flight price is already lower than that target price"})
 		return
 	}
 
