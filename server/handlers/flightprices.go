@@ -12,7 +12,7 @@ import (
 
 // GetFlightPrices function
 func GetFlightPrices(c *gin.Context) {
-	influxClient := c.MustGet("influxdbClient").(client.Client)
+	influxClient := *c.MustGet("influxdbClient").(*client.Client)
 	userInterface, _ := c.Get(IdentityKey)
 	user := userInterface.(*models.User)
 

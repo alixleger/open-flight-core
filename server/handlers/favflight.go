@@ -72,7 +72,7 @@ func PostFavFlight(c *gin.Context) {
 	db.Create(&favFlight)
 
 	// Insert flight price in influxdb
-	influxClient := c.MustGet("influxdbClient").(client.Client)
+	influxClient := *c.MustGet("influxdbClient").(*client.Client)
 	err := insertFlightPrice(influxClient, user.Email, flight.ExternalID, flight.Price)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
