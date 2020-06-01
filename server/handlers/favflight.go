@@ -30,7 +30,7 @@ func GetFavFlights(c *gin.Context) {
 	var favFlights []models.FavFlight
 	db := c.MustGet("db").(*gorm.DB)
 
-	db.Where("user_id = ?", user.ID).Find(&favFlights).Preload("Flight")
+	db.Where("user_id = ?", user.ID).Preload("Flight").Find(&favFlights)
 	res.FavFlights = favFlights
 
 	c.JSON(http.StatusOK, res)
