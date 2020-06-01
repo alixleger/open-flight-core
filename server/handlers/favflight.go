@@ -30,7 +30,7 @@ func GetFavFlights(c *gin.Context) {
 	var favFlights []models.FavFlight
 	db := c.MustGet("db").(*gorm.DB)
 
-	db.Where("user_id = ?", user.ID).Find(&favFlights)
+	db.Where("user_id = ?", user.ID).Find(&favFlights).Preload("Flight")
 	res.FavFlights = favFlights
 
 	c.JSON(http.StatusOK, res)
@@ -73,7 +73,7 @@ func PostFavFlight(c *gin.Context) {
 
 	// Insert flight price in influxdb
 	influxClient := *c.MustGet("influxdbClient").(*client.Client)
-	err := insertFlightPrice(influxClient, user.Email, flight.ExternalID, flight.Price)
+	err := InsertFlightPrice(influxClient, user.Email, flight.ExternalID, flight.Price)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
 		return
@@ -82,7 +82,8 @@ func PostFavFlight(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": true})
 }
 
-func insertFlightPrice(influxClient client.Client, userID string, flightID string, price uint) error {
+// InsertFlightPrice function
+func InsertFlightPrice(influxClient client.Client, userID string, flightID string, price uint) error {
 	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
 		Database:  os.Getenv("INFLUXDB_DATABASE"),
 		Precision: "h",

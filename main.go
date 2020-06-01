@@ -5,9 +5,11 @@ import (
 	"os"
 
 	"github.com/alixleger/open-flight-core/db"
+	"github.com/alixleger/open-flight-core/jobs/flightpricesupdater"
 	"github.com/alixleger/open-flight-core/server"
 	"github.com/alixleger/open-flight-core/services/skyscanner"
 	"github.com/influxdata/influxdb/client/v2"
+	"github.com/robfig/cron/v3"
 )
 
 func main() {
@@ -23,6 +25,9 @@ func main() {
 		log.Fatal(err)
 	}
 	defer influxdbClient.Close()
+
+	flightPricesUpdater := flightpricesupdater.New(sqlDB, skyscannerClient, &influxdbClient)
+	cron.New().AddFunc("@hourly", flightPricesUpdater.Run)
 
 	server := server.New(sqlDB, skyscannerClient, &influxdbClient)
 	server.Run()
