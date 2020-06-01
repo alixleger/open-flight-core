@@ -93,6 +93,9 @@ func (updater *FlightPricesUpdater) Run() {
 		}
 
 		influxClient := *updater.influxdbClient
-		handlers.InsertFlightPrice(influxClient, favFlight.User.Email, flight.ExternalID, flight.Price)
+		err = handlers.InsertFlightPrice(influxClient, favFlight.User.Email, flight.ExternalID, flight.Price)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 }

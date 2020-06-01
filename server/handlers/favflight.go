@@ -85,8 +85,7 @@ func PostFavFlight(c *gin.Context) {
 // InsertFlightPrice function
 func InsertFlightPrice(influxClient client.Client, userID string, flightID string, price uint) error {
 	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
-		Database:  os.Getenv("INFLUXDB_DATABASE"),
-		Precision: "h",
+		Database: os.Getenv("INFLUXDB_DATABASE"),
 	})
 	if err != nil {
 		log.Println(err)
