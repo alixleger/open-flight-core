@@ -27,7 +27,9 @@ func main() {
 	defer influxdbClient.Close()
 
 	flightPricesUpdater := flightpricesupdater.New(sqlDB, skyscannerClient, &influxdbClient)
-	cron.New().AddFunc("@hourly", flightPricesUpdater.Run)
+	c := cron.New()
+	c.AddFunc("@hourly", flightPricesUpdater.Run)
+	c.Start()
 
 	server := server.New(sqlDB, skyscannerClient, &influxdbClient)
 	server.Run()
