@@ -75,8 +75,7 @@ func (updater *FlightPricesUpdater) Run() {
 			mg.SetAPIBase(mailgun.APIBaseEU)
 			sender := os.Getenv("MAILGUN_SENDER")
 			subject := "Prix cible atteint pour l'un de vos vols favoris !"
-			// recipient := favFlight.User.Email
-			recipient := "alix@leger.tech"
+			recipient := favFlight.User.Email
 			body := fmt.Sprintf("Le vol %s du %s reliant %s à %s avec la company %s a atteint votre prix cible : %d€ !", flight.ExternalID, outboundDate, departPlace.Name, arrivalPlace.Name, flight.Carrier, flight.Price)
 			message := mg.NewMessage(sender, subject, body, recipient)
 
