@@ -14,7 +14,7 @@ jobs:
     - name: Get code
       uses: actions/checkout@v2
     - name: Build and publish
-      uses: elgohr/Publish-Docker-Github-Action@master
+      uses: elgohr/Publish-Docker-Github-Action@v5
       with:
           name: ${{ secrets.REGISTRY_NAME }}
           username: ${{ secrets.REGISTRY_USERNAME }}
